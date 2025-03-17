@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
 
+import Logo from "../../assets/prismatica-logo.png";
+
 export const Navbar = () => {
     return <nav className="md:w-11/12 mx-auto relative flex items-center justify-between py-4 px-8 font-Inter">
-        <Link to="/" className="z-40 transition duration-300 active:scale-95">
+        <Link to="/" className="z-40 transition duration-300 active:scale-95 flex items-center gap-4">
+            <img src={Logo} alt="Logo" className="w-8 h-8" />
             <span className="transition duration-300 text-neutral text-2xl font-extrabold brightness-150 tracking-wider">
                 PRISMATICA
             </span>
