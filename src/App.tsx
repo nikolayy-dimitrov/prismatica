@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 import "./config/firebaseConfig.ts";
 
@@ -42,6 +43,7 @@ function App() {
                 </Route>
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
+              <ToastContainer />
           </AuthProvider>
       </div>
   )
