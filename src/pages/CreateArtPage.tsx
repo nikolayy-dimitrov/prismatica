@@ -1,164 +1,42 @@
 import React, { useRef, useEffect, useState, useContext } from "react";
-import { toast } from "react-toastify";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { faPaintBrush, faPalette } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { storage, db } from "../config/firebaseConfig";
 import { AuthContext } from "../context/AuthContext";
+
 import useMediaQuery from "../hooks/useMediaQuery";
+import { useCanvasSetup } from "../hooks/useCanvasSetup";
+import { useFirebaseArtwork } from "../hooks/useUploadArtworks";
+import { useCanvasDrawing } from "../hooks/useCanvasDrawing";
 
 export const CreateArt = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const isMobile = useMediaQuery("(max-width: 640px)");
-    const [isDrawing, setIsDrawing] = useState<boolean>(false);
-    const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
 
     const [strokeColor, setStrokeColor] = useState<string>("white");
     const [colorModal, setColorModal] = useState<boolean>(false);
     const [strokeSize, setStrokeSize] = useState<number>(5);
     const [strokeSizeModal, setStrokeSizeModal] = useState<boolean>(false);
 
-    const { user } = useContext(AuthContext);
-
     const aspectRatio = 500 / 800;
 
-    // Canvas dimensions
-    const updateCanvasSize = () => {
-        if (canvasRef.current) {
-            if (isMobile && containerRef.current) {
-                // Mobile
-                const containerWidth = containerRef.current.clientWidth;
-                const newWidth = containerWidth;
-                const newHeight = containerWidth * aspectRatio;
-                canvasRef.current.width = newWidth;
-                canvasRef.current.height = newHeight + 250;
-            } else {
-                // Desktop
-                canvasRef.current.width = 800;
-                canvasRef.current.height = 500;
-            }
-            if (context) {
-                context.lineCap = "round";
-                context.lineWidth = strokeSize;
-                context.strokeStyle = strokeColor;
-            }
-        }
-    };
+    const { user } = useContext(AuthContext);
 
-    // Setup canvas on mount and whenever the view changes
-    useEffect(() => {
-        if (canvasRef.current) {
-            updateCanvasSize();
-            const ctx = canvasRef.current.getContext("2d");
-            if (ctx) {
-                setContext(ctx);
-                ctx.lineCap = "round";
-                ctx.lineWidth = strokeSize;
-                ctx.strokeStyle = strokeColor;
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isMobile]);
+    const context = useCanvasSetup(canvasRef, containerRef, isMobile, aspectRatio);
+    const { handleUpload, handleClear } = useFirebaseArtwork(canvasRef);
+    const { startDrawing, draw, endDrawing } = useCanvasDrawing(
+        canvasRef,
+        context
+    );
 
-    // Update canvas dimensions on window resize
-    useEffect(() => {
-        window.addEventListener("resize", updateCanvasSize);
-        return () => window.removeEventListener("resize", updateCanvasSize);
-    }, [isMobile, context, strokeColor]);
-
-    // When strokeColor/strokeSize changes, update the context
+    // Update context when strokeColor/strokeSize changes
     useEffect(() => {
         if (context) {
             context.strokeStyle = strokeColor;
             context.lineWidth = strokeSize;
         }
     }, [strokeColor, context, strokeSize]);
-
-    // Mouse event handlers
-    const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!context) return;
-        setIsDrawing(true);
-        context.beginPath();
-        const rect = canvasRef.current!.getBoundingClientRect();
-        context.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-    };
-
-    const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
-        if (!isDrawing || !context) return;
-        const rect = canvasRef.current!.getBoundingClientRect();
-        context.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        context.stroke();
-    };
-
-    const endDrawing = () => {
-        if (!context) return;
-        context.closePath();
-        setIsDrawing(false);
-    };
-
-    // Touch event handlers for mobile
-    const startTouchDrawing = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        if (!context) return;
-        setIsDrawing(true);
-        context.beginPath();
-        const touch = e.touches[0];
-        const rect = canvasRef.current!.getBoundingClientRect();
-        context.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-    };
-
-    const touchDraw = (e: React.TouchEvent<HTMLCanvasElement>) => {
-        if (!isDrawing || !context) return;
-        const touch = e.touches[0];
-        const rect = canvasRef.current!.getBoundingClientRect();
-        context.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-        context.stroke();
-    };
-
-    const endTouchDrawing = () => {
-        if (!context) return;
-        context.closePath();
-        setIsDrawing(false);
-    };
-
-    // Clear canvas
-    const handleClear = () => {
-        if (context && canvasRef.current) {
-            context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        }
-    };
-
-    // Handle canvas upload to Firebase
-    const handleUpload = async () => {
-        if (!canvasRef.current || !user) return;
-        const canvas = canvasRef.current;
-        canvas.toBlob(
-            async (blob) => {
-                if (!blob) return;
-                try {
-                    const fileName = new Date().getTime().toString() + ".png";
-                    const fileRef = ref(storage, `artworks/${user.uid}/${fileName}`);
-                    const snapshot = await uploadBytes(fileRef, blob);
-                    const downloadURL = await getDownloadURL(snapshot.ref);
-                    await addDoc(collection(db, "artworks"), {
-                        uid: user.uid,
-                        fileName,
-                        downloadURL,
-                        createdAt: serverTimestamp(),
-                    });
-                    toast.success("Artwork uploaded successfully!");
-                    handleClear();
-                } catch (error) {
-                    console.error("Error uploading artwork:", error);
-                    toast.error("Error uploading artwork");
-                }
-            },
-            "image/png",
-            1
-        );
-    };
 
     const toggleColorModal = () => {
         setStrokeSizeModal(false);
@@ -169,6 +47,8 @@ export const CreateArt = () => {
         setColorModal(false);
         setStrokeSizeModal(!strokeSizeModal);
     };
+
+    if (!user) return;
 
     return (
         <div
@@ -183,9 +63,9 @@ export const CreateArt = () => {
                 onMouseMove={draw}
                 onMouseUp={endDrawing}
                 onMouseLeave={endDrawing}
-                onTouchStart={startTouchDrawing}
-                onTouchMove={touchDraw}
-                onTouchEnd={endTouchDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={endDrawing}
             />
             <div className="flex gap-4">
                 <button
