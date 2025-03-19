@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { auth } from "../../config/firebaseConfig.ts";
 import { AuthContext } from "../../context/AuthContext.tsx";
 import Logo from "../../assets/prismatica-logo.png";
-import useMediaQuery from "../../utils/useMediaQuery.ts";
+import useMediaQuery from "../../hooks/useMediaQuery.ts";
 
 export const Navbar = () => {
     const { user } = useContext(AuthContext);
