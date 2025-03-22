@@ -2,12 +2,14 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import { useAllArtworks } from "../hooks/useGallery.ts";
+import { AuthContext } from "../context/AuthContext.tsx";
+import { useGallery } from "../hooks/useGallery.ts";
 
-export const Gallery = () => {
-    const { artworks , loading } = useAllArtworks();
+export const Profile = () => {
+    const { user } = useContext(AuthContext);
+    const { artworks , loading } = useGallery(user?.uid);
 
-    if (loading) return <p className="text-white mt-20 text-center font-semibold text-2xl">Loading artworks...</p>;
+    if (loading) return <p className="text-white mt-20 text-center font-semibold text-2xl">Loading profile...</p>;
 
     return <section
         id="gallery"

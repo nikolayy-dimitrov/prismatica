@@ -38,4 +38,28 @@ export const useGallery = (userId: string | undefined) => {
     }, [userId]);
 
     return { artworks, setArtworks, loading }
-}
+};
+
+export const useAllArtworks = () => {
+    const [artworks, setArtworks] = useState<Artwork[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const artworksRef = collection(db, "artworks");
+        const q = query(artworksRef);
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const artworksData = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            })) as Artwork[];
+
+            setArtworks(artworksData);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    return { artworks, setArtworks, loading };
+};
