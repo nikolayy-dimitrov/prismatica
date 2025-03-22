@@ -6,7 +6,7 @@ import { AuthContext } from "../context/AuthContext";
 
 import useMediaQuery from "../hooks/useMediaQuery";
 import { useCanvasSetup } from "../hooks/useCanvasSetup";
-import { useFirebaseArtwork } from "../hooks/useUploadArtworks";
+import { useUploadArtwork } from "../hooks/useUploadArtworks";
 import { useCanvasDrawing } from "../hooks/useCanvasDrawing";
 
 export const CreateArt = () => {
@@ -24,7 +24,7 @@ export const CreateArt = () => {
     const { user } = useContext(AuthContext);
 
     const context = useCanvasSetup(canvasRef, containerRef, isMobile, aspectRatio);
-    const { handleUpload, handleClear } = useFirebaseArtwork(canvasRef);
+    const { handleUpload, handleClear } = useUploadArtwork(canvasRef);
     const { startDrawing, draw, endDrawing } = useCanvasDrawing(
         canvasRef,
         context

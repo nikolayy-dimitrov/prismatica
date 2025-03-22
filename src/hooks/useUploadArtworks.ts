@@ -5,7 +5,7 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { storage, db } from "../config/firebaseConfig";
 import { AuthContext } from "../context/AuthContext";
 
-export const useFirebaseArtwork = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
+export const useUploadArtwork = (canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
     const { user } = useContext(AuthContext);
 
     const handleUpload = async () => {
@@ -23,6 +23,7 @@ export const useFirebaseArtwork = (canvasRef: React.RefObject<HTMLCanvasElement 
 
                     await addDoc(collection(db, "artworks"), {
                         uid: user.uid,
+                        ownerName: user.displayName,
                         fileName,
                         downloadURL,
                         createdAt: serverTimestamp(),
