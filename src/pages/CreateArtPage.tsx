@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useContext } from "react";
-import { faPaintBrush, faPalette } from "@fortawesome/free-solid-svg-icons";
+import { faPaintBrush, faPalette, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { AuthContext } from "../context/AuthContext";
@@ -25,9 +25,9 @@ export const CreateArt = () => {
 
     const context = useCanvasSetup(canvasRef, containerRef, isMobile, aspectRatio);
     const { handleUpload, handleClear } = useUploadArtwork(canvasRef);
-    const { startDrawing, draw, endDrawing } = useCanvasDrawing(
+    const { startDrawing, draw, endDrawing, handleUndo } = useCanvasDrawing(
         canvasRef,
-        context
+        context,
     );
 
     // Update context when strokeColor/strokeSize changes
@@ -53,12 +53,17 @@ export const CreateArt = () => {
     return (
         <div
             ref={containerRef}
-            className="md:mt-8 max-md:mt-16 w-11/12 mx-auto flex flex-col items-center justify-center bg-dark text-white px-4"
+            className="md:mt-8 max-md:mt-12 w-11/12 mx-auto flex flex-col items-center justify-center text-white px-4"
         >
-            <h1 className="text-4xl font-bold mb-8">Create Your Art</h1>
+            <button
+                onClick={handleUndo}
+                className="py-2 px-3 mb-6 border-2 rounded-full"
+            >
+                <FontAwesomeIcon icon={faRotateLeft}/>
+            </button>
             <canvas
                 ref={canvasRef}
-                className="border-2 border-gray-300 mb-4 touch-none"
+                className="border-2 border-gray-300 bg-dark mb-4 touch-none"
                 onMouseDown={startDrawing}
                 onMouseMove={draw}
                 onMouseUp={endDrawing}
@@ -80,6 +85,7 @@ export const CreateArt = () => {
                 >
                     Clear Canvas
                 </button>
+
             </div>
             {colorModal && !strokeSizeModal ? (
                 <div
@@ -87,27 +93,27 @@ export const CreateArt = () => {
                     <button
                         onClick={() => setStrokeColor("white")}
                         className={`bg-white p-3 border-2 border-transparent rounded-md
-                        ${strokeColor === 'white' && "border-black"}`}
+                        ${strokeColor === 'white' ? "border-white" : "border-dark"}`}
                     ></button>
                     <button
                         onClick={() => setStrokeColor("black")}
                         className={`bg-black p-3 border-2 border-transparent rounded-md
-                        ${strokeColor === 'black' && "border-white"}`}
+                        ${strokeColor === 'black' ? "border-white" : "border-dark"}`}
                     ></button>
                     <button
                         onClick={() => setStrokeColor("red")}
                         className={`bg-red-700 p-3 border-2 border-transparent rounded-md
-                        ${strokeColor === 'red' && "border-white"}`}
+                        ${strokeColor === 'red' ? "border-white" : "border-dark"}`}
                     ></button>
                     <button
                         onClick={() => setStrokeColor("green")}
                         className={`bg-green-800 p-3 border-2 border-transparent rounded-md
-                         ${strokeColor === 'green' && "border-white"}`}
+                         ${strokeColor === 'green' ? "border-white" : "border-dark"}`}
                     ></button>
                     <button
                         onClick={() => setStrokeColor("blue")}
                         className={`bg-blue-800 p-3 border-2 border-transparent rounded-md
-                        ${strokeColor === 'blue' && "border-white"}`}
+                        ${strokeColor === 'blue' ? "border-white" : "border-dark"}`}
                     ></button>
                     <button
                         onClick={toggleColorModal}
@@ -122,7 +128,7 @@ export const CreateArt = () => {
                     className="px-3 py-2 border-2 rounded-full
                     absolute max-md:bottom-20 md:right-32 max-md:right-1/4"
                 >
-                    <FontAwesomeIcon icon={faPalette} />
+                    <FontAwesomeIcon icon={faPalette}/>
                 </button>
             )}
 
@@ -136,7 +142,7 @@ export const CreateArt = () => {
                     >
                         <div className={`p-3 ${
                             strokeColor === "white" || strokeColor === "black"
-                                ? `bg-${strokeColor}`
+                                ? `bg-${strokeColor} border`
                                 : `bg-${strokeColor}-700`
                         } rounded-full`}></div>
                     </button>
@@ -147,7 +153,7 @@ export const CreateArt = () => {
                     >
                         <div className={`p-2.5 ${
                             strokeColor === "white" || strokeColor === "black"
-                                ? `bg-${strokeColor}`
+                                ? `bg-${strokeColor} border`
                                 : `bg-${strokeColor}-700`
                         } rounded-full`}></div>
                     </button>
@@ -158,7 +164,7 @@ export const CreateArt = () => {
                     >
                         <div className={`p-1.5 ${
                             strokeColor === "white" || strokeColor === "black"
-                                ? `bg-${strokeColor}`
+                                ? `bg-${strokeColor} border`
                                 : `bg-${strokeColor}-700`
                         } rounded-full`}></div>
                     </button>
@@ -169,7 +175,7 @@ export const CreateArt = () => {
                     >
                         <div className={`p-1 ${
                             strokeColor === "white" || strokeColor === "black"
-                                ? `bg-${strokeColor}`
+                                ? `bg-${strokeColor} border`
                                 : `bg-${strokeColor}-700`
                         } rounded-full`}></div>
                     </button>
