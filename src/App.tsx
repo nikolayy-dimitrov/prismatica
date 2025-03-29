@@ -11,6 +11,7 @@ import { Gallery } from "./pages/GalleryPage.tsx";
 import { ArtworkDetails } from "./pages/ArtworkDetailsPage.tsx";
 import { Artboard } from "./pages/ArtboardPage.tsx";
 import { CreateArt } from "./pages/CreateArtPage.tsx";
+import { AIArt } from "./pages/AIArtPage.tsx";
 
 import AuthGuard from "./guards/AuthGuard.tsx";
 import { SignUp } from "./pages/auth/SignUpPage.tsx";
@@ -33,6 +34,7 @@ function App() {
                 <Route element={<GuestGuard />}>
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/create" element={<CreateArt />} />
+                    <Route path="/ai-art" element={<AIArt />} />
                 </Route>
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/gallery/:id" element={<ArtworkDetails />} />

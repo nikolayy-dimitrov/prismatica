@@ -1,19 +1,36 @@
 import React, { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp, faTrashCan, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faThumbsUp, faTrashCan, faCheck, faPen, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+
 import { AuthContext } from "../context/AuthContext";
 import { useArtwork } from "../hooks/useArtwork";
 
 export const ArtworkDetails = () => {
     const { id } = useParams<{ id: string }>();
 
-    const { artwork, deleteArtwork, loading, error, toggleLike, addComment, deleteComment, comments, updateLabel } = useArtwork(id);
+    const {
+        artwork,
+        deleteArtwork,
+        loading,
+        error,
+        toggleLike,
+        addComment,
+        deleteComment,
+        comments,
+        updateLabel,
+        updateDescription
+    } = useArtwork(id);
     const { user } = useContext(AuthContext);
 
     const [commentText, setCommentText] = useState("");
+
     const [editMode, setEditMode] = useState(false);
     const [newLabel, setNewLabel] = useState(artwork?.label || "");
+
+    const [editDescription, setEditDescription] = useState(false);
+    const [newDescription, setNewDescription] = useState(artwork?.description || "");
 
     if (loading) return <p className="text-center text-white mt-10 text-xl">Loading artwork...</p>;
     if (error) return <p className="text-center text-red-500 mt-10 text-xl">Error: {error}</p>;
@@ -27,9 +44,15 @@ export const ArtworkDetails = () => {
         setEditMode(false);
     };
 
+    const handleSaveDescription = async () => {
+        await updateDescription(newDescription);
+        artwork.description = newDescription;
+        setEditDescription(false);
+    };
+
     return (
         <section id="artwork-details" className="max-w-4xl mx-auto p-4 mt-8">
-            <div className="flex items-center justify-center py-3">
+            <div className="flex flex-col items-center justify-center py-3">
                 {editMode ? (
                     <div className="flex items-center justify-center gap-2 w-full">
                         <input
@@ -57,14 +80,42 @@ export const ArtworkDetails = () => {
                         </span>
                     </button>
                 )}
+                <span className="text-xs text-neutral/70 text-center tracking-wider">
+                    {artwork.isAIGenerated && "AI Generated"}
+                </span>
             </div>
-            <img
-                src={artwork.downloadURL}
-                alt={artwork.fileName}
-                className="w-auto h-96 mx-auto object-contain mb-4 p-0.5 rounded-md border-2 border-white/80 drop-shadow bg-gradient-to-tl from-midnight/10 to-neutral/5"
-            />
+            <div className="flex items-start mx-auto w-11/12 gap-4">
+                <img
+                    src={artwork.downloadURL}
+                    alt={artwork.fileName}
+                    className="w-auto h-96 mx-auto object-contain mb-4 p-0.5 rounded-md border-2 border-white/80 drop-shadow bg-gradient-to-tl from-midnight/10 to-neutral/5"
+                />
+                {editDescription ? (
+                    <div className="w-full relative">
+                        <textarea
+                            value={newDescription}
+                            onChange={(e) => setNewDescription(e.target.value)}
+                            className="w-full h-32 max-h-96 min-h-16 px-4 py-2 pr-10  /* Add right padding */
+                                       rounded-lg bg-dark border border-white/40
+                                       transition-all text-white/80
+                                       placeholder-charcoal resize-y
+                                       overflow-auto text-left align-top"
+                            placeholder="Enter your description..."
+                            rows={4}
+                        />
+                        <FontAwesomeIcon
+                            className="cursor-pointer text-white/80 absolute bottom-3 right-3"
+                            icon={faFloppyDisk}
+                            onClick={handleSaveDescription}
+                        />
+                    </div>
+                ) : !editDescription && (artwork.description || newDescription) && (
+                    <p className="text-white/80">
+                        {artwork.description}
+                    </p>
+                )}
+            </div>
             <div className="space-y-2 text-white w-11/12 mx-auto">
-                {artwork.description && <p>{artwork.description}</p>}
                 <div className="flex items-center justify-between">
                     <div className="flex justify-center items-center gap-4 text-2xl text-neutral brightness-200">
                         <button
@@ -75,6 +126,17 @@ export const ArtworkDetails = () => {
                         </button>
                         <span>{artwork.likes?.length ?? 0}</span>
                     </div>
+                    {isOwner && !editDescription &&
+                        <button
+                            disabled={!isOwner}
+                            onClick={() => {
+                                setNewDescription(artwork.description || "");
+                                setEditDescription(true);
+                            }}
+                        >
+                            <FontAwesomeIcon icon={faPen} />
+                        </button>
+                    }
                     <div>
                         <button
                             onClick={() => deleteArtwork(artwork.id)}

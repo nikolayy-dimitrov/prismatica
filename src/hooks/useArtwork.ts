@@ -24,6 +24,8 @@ interface Artwork {
     ownerName?: string;
     likes?: string[];
     createdAt?: Timestamp;
+    prompt: string;
+    isAIGenerated: boolean;
 }
 
 export const useArtwork = (artworkId: string | undefined) => {
@@ -141,6 +143,20 @@ export const useArtwork = (artworkId: string | undefined) => {
         }
     };
 
+    const updateDescription = async (description: string) => {
+        if (!user || !description || !artworkId) return;
+
+        if (description !== artwork?.description) {
+            try {
+                const artworkRef = doc(db, "artworks", artworkId);
+                await updateDoc(artworkRef, { description: description });
+            } catch (error) {
+                console.error("Error updating description:", error);
+                toast.error("Error updating description:");
+            }
+        }
+    };
+
     const deleteArtwork = async (artworkId: string) => {
         if (!user || !artwork || (userId !== artwork.uid)) return;
 
@@ -155,5 +171,16 @@ export const useArtwork = (artworkId: string | undefined) => {
         }
     };
 
-    return { artwork, deleteArtwork, loading, error, toggleLike, addComment, deleteComment, comments, updateLabel };
+    return {
+        artwork,
+        deleteArtwork,
+        loading,
+        error,
+        toggleLike,
+        addComment,
+        deleteComment,
+        comments,
+        updateLabel,
+        updateDescription
+    };
 };
