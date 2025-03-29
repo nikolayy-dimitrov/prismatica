@@ -43,14 +43,14 @@ export const SignUp: React.FC = () => {
                         <span>Continue with Google</span>
                         <div></div>
                     </div>
-                    <div
-                        className="flex items-center justify-between bg-plum text-white px-4 py-3 rounded-xl transition-transform duration-150 active:scale-95 cursor-pointer"
-                        onClick={handleAnonymousLogin}
-                    >
-                        <FontAwesomeIcon icon={faUser} className="ml-2" />
-                        <span>Continue Anonymously</span>
-                        <div></div>
-                    </div>
+                    {/*<div*/}
+                    {/*    className="flex items-center justify-between bg-plum text-white px-4 py-3 rounded-xl transition-transform duration-150 active:scale-95 cursor-pointer"*/}
+                    {/*    onClick={handleAnonymousLogin}*/}
+                    {/*>*/}
+                    {/*    <FontAwesomeIcon icon={faUser} className="ml-2" />*/}
+                    {/*    <span>Continue Anonymously</span>*/}
+                    {/*    <div></div>*/}
+                    {/*</div>*/}
                 </div>
                 <div className="border-t border-neutral mt-6 pt-4 text-center">
                     <Link to="/sign-in" className="text-neutral hover:underline">
