@@ -92,7 +92,7 @@ export const Home = () => {
                         </Link>
                     </motion.div>
                 </motion.div>
-                {/* Background Images with Animations */}
+                {/* Background Images */}
                 <motion.img
                     src={SecondPainter}
                     alt="Painter Hero Top Left"
@@ -233,11 +233,11 @@ export const Home = () => {
                                 bg-gradient-to-tr from-yellow-400 to-plum
                                 rounded-lg shadow-lg overflow-hidden p-4">
                                 <h3 className="text-2xl font-bold mb-2 drop-shadow text-plum">
-                                    Upload Art
+                                    Browse Collections
                                 </h3>
                                 <p className="text-sm text-dark">
-                                    Easily upload your artwork with our intuitive interface and share your creativity
-                                    with the world.
+                                    Explore themes, artistic movements, and personalized recommendations that
+                                    evolve with our growing community.
                                 </p>
                             </div>
                         }
@@ -259,10 +259,10 @@ export const Home = () => {
                                 bg-gradient-to-tr from-yellow-400 to-plum
                                 rounded-lg shadow-lg overflow-hidden p-4">
                                 <h3 className="text-2xl font-bold mb-2 drop-shadow text-plum">
-                                    Upload Art
+                                    Spark Digital Magic
                                 </h3>
                                 <p className="text-sm text-dark">
-                                    Easily upload your artwork with our intuitive interface and share your creativity with the world.
+                                    Transform ideas into stunning visuals using our AI art studio.
                                 </p>
                             </div>
                         }
