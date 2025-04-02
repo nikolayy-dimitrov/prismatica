@@ -120,7 +120,7 @@ export const ArtworkDetails = () => {
                     <div className="flex justify-center items-center gap-4 text-2xl text-neutral brightness-200">
                         <button
                             onClick={toggleLike}
-                            disabled={isOwner}
+                            disabled={isOwner || !user}
                         >
                             <FontAwesomeIcon icon={faThumbsUp} />
                         </button>
@@ -185,7 +185,8 @@ export const ArtworkDetails = () => {
                                 addComment(commentText);
                                 setCommentText("");
                             }}
-                            className="bg-gradient-to-br from-charcoal/40 to-neutral/20 border px-8 py-2 rounded-md"
+                            disabled={!user}
+                            className="disabled:cursor-not-allowed bg-gradient-to-br from-charcoal/40 to-neutral/20 border px-8 py-2 rounded-md"
                         >
                             Post
                         </button>
