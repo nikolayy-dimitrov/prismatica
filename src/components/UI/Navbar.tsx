@@ -7,6 +7,8 @@ import { auth } from "../../config/firebaseConfig.ts";
 import { AuthContext } from "../../context/AuthContext.tsx";
 import Logo from "../../assets/prismatica-logo.png";
 import useMediaQuery from "../../hooks/useMediaQuery.ts";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export const Navbar = () => {
     const { user } = useContext(AuthContext);
@@ -19,7 +21,9 @@ export const Navbar = () => {
         setIsMenuToggled(!isMenuToggled);
     };
 
-    const handleLogout = async () => {
+    const handleLogout = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+
         try {
             await signOut(auth);
             window.location.href = '/';
@@ -28,51 +32,54 @@ export const Navbar = () => {
         }
     };
 
-    return <nav className="md:w-11/12 mx-auto relative flex items-center justify-between py-4 px-8 font-Inter">
-        <Link to="/" className="z-40 transition duration-300 active:scale-95 flex items-center gap-4 max-md:mt-1">
-            <img src={Logo} alt="Logo" className="w-8 h-8" />
-            <span className="transition duration-300 bg-clip-text bg-gradient-to-l from-midnight to-plum text-transparent text-2xl font-extrabold brightness-200 tracking-wider">
-                PRISMATICA
-            </span>
+    return <nav className="md:w-full mx-auto relative flex items-center justify-between py-4 px-8 font-Inter">
+        <Link to="/" className="z-40 transition duration-300 active:scale-95 flex items-center gap-2 max-md:mt-1">
+            <img src={Logo} alt="Logo" className="w-6 h-6" />
+            {isAboveMediumScreens &&
+                <span className="transition duration-200 text-midnight text-xl font-extrabold brightness-200 tracking-wider">
+                    PRISMATICA
+                </span>
+            }
         </Link>
         {/* Main menu */}
         {isAboveMediumScreens ? (
-            <>
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex gap-12 font-light bg-gradient-to-l from-plum to-midnight bg-clip-text text-transparent brightness-200 z-40">
+            <div className="flex items-center gap-2">
+                {/* Link to view all pictures */}
                 <Link to="/gallery">
-                    Gallery
+                    <span className="text-plum brightness-200 uppercase text-sm">Gallery</span>
                 </Link>
-                <Link to="/">
-                    Home
-                </Link>
-                <Link to="/artboard">
-                    Artboard
-                </Link>
-            </div>
-            {/* Auth menu */}
-            {user ? (
-                <div className="flex items-center gap-8 z-40">
-                    <Link
-                        to="/profile"
-                        className="font-normal tracking-wide text-plum brightness-200">
-                        {user.displayName ? `Welcome, ${user.displayName} ` : 'Welcome to Prismatica'}
-                    </Link>
-                    <button
-                        onClick={handleLogout}
-                        className="text-neutral font-light border-2 border-neutral/35 px-4 rounded-lg">
-                        Logout
-                    </button>
-                </div>
-            ) : (
-                <div>
+
+                {/* Auth menu */}
+                {user ? (
+                    <>
+                        <button
+                            onClick={toggleMenu}
+                            className="text-plum brightness-200 px-4">
+                            <FontAwesomeIcon icon={faUser} />
+                        </button>
+                        {isMenuToggled && (
+                            <div className="absolute top-12 right-10 bg-plum/80 border border-plum rounded-lg py-4 pl-12 pr-6 z-40">
+                                <div className="flex flex-col items-end gap-4 text-white/90">
+                                    <Link to="/profile">View Profile</Link>
+                                    <Link to="/gallery">Gallery</Link>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full border-t border-neutral/20 pt-2 text-right"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : (
                     <Link
                         to="/sign-up"
-                        className="text-plum brightness-150 border-2 border-plum/60 px-4 rounded-lg py-1">
-                        Join Now
+                        className="text-plum brightness-200 px-4">
+                        <FontAwesomeIcon icon={faUser} />
                     </Link>
-                </div>
-            )}
-        </>
+                )}
+            </div>
         ) : (
             // Hamburger Menu
             <button className="flex items-center z-40" onClick={toggleMenu}>
@@ -81,11 +88,11 @@ export const Navbar = () => {
                         isMenuToggled ? "rotate-0" : ""
                     }`}
                 >
-                        <span
-                            className={`block absolute h-[3px] w-full bg-gradient-to-r from-midnight to-plum rounded-[9px] left-0 transition-all duration-250 ease-in-out ${
-                                isMenuToggled ? "top-[10px] rotate-[135deg]" : "top-0"
-                            }`}
-                        ></span>
+                    <span
+                        className={`block absolute h-[3px] w-full bg-gradient-to-r from-midnight to-plum rounded-[9px] left-0 transition-all duration-250 ease-in-out ${
+                            isMenuToggled ? "top-[10px] rotate-[135deg]" : "top-0"
+                        }`}
+                    ></span>
                     <span
                         className={`block absolute h-[3px] w-full top-[10px] bg-gradient-to-r from-midnight to-plum rounded-[9px] left-0 transition-all duration-250 ease-in-out ${
                             isMenuToggled ? "opacity-0 left-[-60px]" : ""
@@ -106,7 +113,7 @@ export const Navbar = () => {
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -100, opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="fixed top-20 z-30 w-10/12 h-[50vh] flex flex-col items-center justify-center
+                className="fixed top-20 z-30 w-10/12 h-[60vh] flex flex-col items-center justify-center
                         bg-gradient-to-b from-midnight/80 to-plum/80 backdrop-blur rounded-3xl"
             >
                 <div className="flex flex-col items-center justify-center gap-16
@@ -121,11 +128,6 @@ export const Navbar = () => {
                             Gallery
                         </button>
                     </Link>
-                    <Link to="/artboard">
-                        <button onClick={toggleMenu}>
-                            Artboard
-                        </button>
-                    </Link>
                     {!user ? (
                         <Link to="/sign-in">
                             <button onClick={toggleMenu}>
@@ -133,11 +135,20 @@ export const Navbar = () => {
                             </button>
                         </Link>
                     ) : (
-                        <Link
-                            to="/profile"
-                            className="text-content">
-                            Profile
-                        </Link>
+                        <div className="flex flex-col items-center justify-center gap-20">
+                            <Link
+                                to="/profile">
+                                <button onClick={toggleMenu}>
+                                    Profile
+                                </button>
+                            </Link>
+                            <button onClick={async (e) => {
+                                toggleMenu();
+                                await handleLogout(e)
+                            }}>
+                                Logout
+                            </button>
+                        </div>
                     )}
                 </div>
             </motion.div>

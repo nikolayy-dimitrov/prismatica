@@ -1,19 +1,26 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { AuthContext } from "../context/AuthContext";
-import { storage, db } from "../config/firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { toast } from "react-toastify";
+
+import { storage, db } from "../config/firebaseConfig";
+import { AuthContext } from "../context/AuthContext";
+import { AIArt } from "../components/AIArt.tsx";
 
 export const Artboard = () => {
     const { user } = useContext(AuthContext);
+
+    const navigate = useNavigate();
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
         if (!user) {
             console.error("User is not authenticated.");
+            toast.error("User is not authenticated");
+            navigate('/sign-up');
             return;
         }
         try {
@@ -50,53 +57,49 @@ export const Artboard = () => {
             }}
             transition={{ duration: 0.5 }}
         >
-            <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-b from-plum to-midnight bg-clip-text text-transparent brightness-200">
-                Create Your Masterpiece
-            </h1>
-            <div className="grid md:grid-cols-2 gap-8 md:w-8/12 max-md:w-11/12">
-                {/* Option 1: Upload Artwork */}
-                <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer bg-gradient-to-tl from-plum to-midnight
-            border-t-2 border-l-2 border-b-4 border-r-4 border-t-midnight/40 border-l-midnight/40 border-plum
-            shadow-lg rounded-3xl p-8"
-                >
-                    <h2 className="text-2xl font-semibold mb-4">Upload Artwork</h2>
-                    <p className="mb-4">
-                        Select an artwork file from your device to showcase your art.
-                    </p>
-                    <input
-                        id="file-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
-                </label>
-                {/* Option 2: Create New Artwork */}
-                <Link
-                    to="/create"
-                    className="bg-gradient-to-tl from-plum to-midnight
-            border-t-2 border-l-2 border-b-4 border-r-4 border-t-midnight/40 border-l-midnight/40 border-plum
-            shadow-lg rounded-3xl p-8"
-                >
-                    <h2 className="text-2xl font-semibold mb-4">Create New Artwork</h2>
-                    <p className="mb-4">
-                        Start a new creation using our digital tools and express your vision.
-                    </p>
-                </Link>
-                {/* Option 3: AI Artworks */}
-                <Link
-                    to="/ai-art"
-                    className="bg-gradient-to-tl from-plum to-midnight
-            border-t-2 border-l-2 border-b-4 border-r-4 border-t-midnight/40 border-l-midnight/40 border-plum
-            shadow-lg rounded-3xl p-8 md:col-span-2 mx-auto"
-                >
-                    <h2 className="text-2xl font-semibold mb-4">Use AI To Create Art</h2>
-                    <p className="mb-4">
-                        Turn your vision into reality just like that!
-                    </p>
-                </Link>
+            <div className="flex flex-col gap-8 md:w-8/12 max-md:w-11/12">
+                <AIArt />
+                <div className="relative md:w-10/12 max-md:w-full mx-auto">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-plum/60"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                        <span className="bg-black px-4 text-xs text-white/60">or</span>
+                    </div>
+                </div>
+                <div className="flex max-md:flex-col items-center justify-center gap-4">
+                    {/* Option 1: Upload Artwork */}
+                    <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer bg-charcoal/40
+                        border border-plum/80 rounded-lg py-2 md:px-12 max-md:px-20
+                        hover:bg-charcoal/30 transition-colors duration-200
+                        "
+                    >
+                        <h2 className="text-md font-medium text-plum brightness-200">
+                            Upload Artwork
+                        </h2>
+                        <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
+                    </label>
+                    {/* Option 2: Create New Artwork */}
+                    <Link
+                        to="/create"
+                        className="cursor-pointer bg-charcoal/40
+                        border border-plum/80 rounded-lg py-2 md:px-12 max-md:px-20
+                        hover:bg-charcoal/30 transition-colors duration-200
+                        "
+                    >
+                        <h2 className="text-md font-medium text-plum brightness-200">
+                            Create Artwork
+                        </h2>
+                    </Link>
+                </div>
             </div>
         </motion.section>
     );

@@ -79,7 +79,7 @@ export const useArtwork = (artworkId: string | undefined) => {
 
         fetchArtwork();
         fetchComments();
-    }, [artworkId]);
+    }, []);
 
     const toggleLike = async () => {
         if (!userId || !artwork || !artworkId) return;
