@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, Timestamp, where } from "firebase/firestore";
+import {collection, getDocs, onSnapshot, query, Timestamp, where} from "firebase/firestore";
 
 import { db } from "../config/firebaseConfig.ts";
 
@@ -8,7 +8,14 @@ interface Artwork {
     uid: string;
     fileName: string;
     downloadURL: string;
-    createdAt: Timestamp;
+    label?: string;
+    description?: string;
+    ownerName?: string;
+    likes?: string[];
+    createdAt?: Timestamp;
+    prompt: string;
+    isAIGenerated: boolean;
+    commentsCount: number;
 }
 
 export const useGallery = (userId: string | undefined) => {
@@ -48,13 +55,22 @@ export const useAllArtworks = () => {
         const artworksRef = collection(db, "artworks");
         const q = query(artworksRef);
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const artworksData = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            })) as Artwork[];
+        const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+            const promises = querySnapshot.docs.map(async (doc) => {
+                const artData = doc.data();
+                const commentsRef = collection(db, "artworks", doc.id, "comments");
+                const commentsSnap = await getDocs(commentsRef);
 
-            setArtworks(artworksData);
+                return {
+                    id: doc.id,
+                    ...artData,
+                    commentsCount: commentsSnap.size,
+                };
+            });
+
+            const artworksData = await Promise.all(promises);
+
+            setArtworks(artworksData as Artwork[]);
             setLoading(false);
         });
 
