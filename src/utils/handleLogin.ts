@@ -19,7 +19,7 @@ export const handleAnonymousLogin = async () => {
     try {
         const auth = getAuth();
         await signInAnonymously(auth);
-        window.location.href = '/artboard';
+        window.location.href = '/profile';
     } catch (err) {
         setError((err as Error).message);
     }

@@ -6,7 +6,7 @@ const AuthGuard: React.FC = () => {
     const { user } = useContext(AuthContext);
 
     if (user) {
-        return <Navigate to="/artboard" replace />;
+        return <Navigate to="/profile" replace />;
     }
 
     return <Outlet />;
