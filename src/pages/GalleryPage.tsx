@@ -28,7 +28,7 @@ export const Gallery = () => {
         id="gallery"
         className="container mx-auto px-4 py-8 font-Inter">
         <motion.div
-            className="grid grid-cols-2 md:grid-cols-3 gap-3"
+            className="grid grid-cols-1 md:grid-cols-3 gap-3"
             initial={{opacity: 0, y: -20}}
             animate={{opacity: 1, y: 0}}
             transition={{duration: 0.8, ease: "easeOut"}}

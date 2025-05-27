@@ -2,7 +2,14 @@ import React, { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faThumbsUp, faTrashCan, faCheck, faPen, faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
+import {
+    faTrashCan,
+    faFloppyDisk,
+    faCircleUser,
+    faPenToSquare, faX
+} from "@fortawesome/free-solid-svg-icons";
+import { faCircleDown, faComment, faHeart } from "@fortawesome/free-regular-svg-icons";
+import { faHeart as faSolidHeart } from "@fortawesome/free-solid-svg-icons";
 
 import { AuthContext } from "../context/AuthContext";
 import { useArtwork } from "../hooks/useArtwork";
@@ -17,7 +24,6 @@ export const ArtworkDetails = () => {
         error,
         toggleLike,
         addComment,
-        deleteComment,
         comments,
         updateLabel,
         updateDescription
@@ -26,23 +32,23 @@ export const ArtworkDetails = () => {
 
     // States for comment input
     const [commentText, setCommentText] = useState("");
-    const [localError, setLocalError] = useState("");
+    const [, setLocalError] = useState("");
 
     // States for label
     const [editMode, setEditMode] = useState(false);
     const [newLabel, setNewLabel] = useState(artwork?.label || "");
-    const [labelError, setLabelError] = useState("");
+    const [, setLabelError] = useState("");
 
     // States for description
-    const [editDescription, setEditDescription] = useState(false);
     const [newDescription, setNewDescription] = useState(artwork?.description || "");
-    const [descriptionError, setDescriptionError] = useState("");
+    const [, setDescriptionError] = useState("");
 
     if (loading) return <p className="text-center text-white mt-10 text-xl">Loading artwork...</p>;
     if (error) return <p className="text-center text-red-500 mt-10 text-xl">Error: {error}</p>;
     if (!artwork) return <p className="text-center text-white mt-10 text-xl">Artwork not found.</p>;
 
     const isOwner = user?.uid === artwork.uid;
+    const hasLiked = artwork.likes?.includes(user?.uid || "");
 
     const handleSaveLabel = async () => {
         // Validate label
@@ -52,10 +58,8 @@ export const ArtworkDetails = () => {
         }
 
         try {
-            await updateLabel(newLabel);
-            artwork.label = newLabel.trim();
+            await updateLabel(newLabel.trim());
             setLabelError("");
-            setEditMode(false);
         } catch (err) {
             setLabelError("Failed to update label. Please try again.");
             console.error("Error updating label: ", err);
@@ -72,14 +76,28 @@ export const ArtworkDetails = () => {
             await updateDescription(newDescription);
             artwork.description = newDescription.trim();
             setDescriptionError("");
-            setEditDescription(false);
         } catch (err) {
             setDescriptionError("Failed to update description. Please try again.");
             console.error("Error updating description: ", err);
         }
     };
 
-    const handleAddComment = async () => {
+    const handleSaveEdit = async () => {
+        if (!artwork) return;
+        await handleSaveLabel();
+        await handleSaveDescription();
+        setEditMode(false);
+    };
+
+    const handleCancelEdit = () => {
+        setNewLabel(artwork.label || "");
+        setNewDescription(artwork.description || "");
+        setEditMode(false);
+    };
+
+    const handleAddComment = async (e: React.FormEvent) => {
+        e.preventDefault();
+
         // Validate comment text
         if (!commentText || commentText.trim() === "") {
             setLocalError("Comment cannot be empty.");
@@ -99,166 +117,230 @@ export const ArtworkDetails = () => {
         }
     };
 
+    const formatTimeAgo = (date: Date) => {
+        const now = new Date()
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+        if (diffInSeconds < 60) return "just now"
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+        return `${Math.floor(diffInSeconds / 86400)}d ago`
+    };
+
+    const handleDownload = (url: string, filename: string) => {
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        link.setAttribute("target", "_blank");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
-        <section id="artwork-details" className="max-w-4xl mx-auto p-4 mt-8">
-            <div className="flex flex-col items-center justify-center py-3">
-                {editMode ? (
-                    <div className="flex flex-col items-center justify-center gap-2 w-full">
-                        <div className="flex items-center justify-center gap-2 w-full">
-                            <input
-                                type="text"
-                                value={newLabel}
-                                onChange={(e) => {
-                                    setNewLabel(e.target.value);
-                                    // Clear the error message when the user starts typing again
-                                    if (labelError) setLabelError("");
+        <section id="artwork-deails" className="w-11/12 mx-auto p-4 mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Image Section */}
+                <div className="lg:col-span-2">
+                    <div className="relative bg-charcoal rounded-lg overflow-hidden">
+                        <img
+                            src={artwork.downloadURL}
+                            alt={artwork.fileName}
+                        />
+                        {/* AI/User Tag */}
+                        <div className="absolute left-4 top-4">
+                            <span className="bg-neutral/80 text-white/80 text-xs rounded-sm py-1 px-2">
+                                {artwork.isAIGenerated ? 'AI Generated' : 'User Created'}
+                            </span>
+                        </div>
+                        {/* Utility Buttons */}
+                        <div className="absolute top-4 right-4 flex items-center gap-2">
+                            {/* Download Button */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownload(artwork.downloadURL, artwork.fileName || "artwork.jpg");
                                 }}
-                                className="flex items-center py-1 px-2 bg-dark text-white text-2xl text-center"
-                            />
-                            <button onClick={handleSaveLabel} className="py-1 px-2 bg-neutral text-dark text-sm rounded-xl">
-                                <FontAwesomeIcon icon={faCheck} />
+                                className="py-1 px-2 bg-charcoal/60 text-white/80 rounded-lg">
+                                <FontAwesomeIcon icon={faCircleDown} />
+                            </button>
+                            {/* Delete Button */}
+                            <button
+                                onClick={async () => {
+                                    await deleteArtwork(artwork.id);
+                                }}
+                                hidden={!isOwner}
+                                disabled={!isOwner}
+                                className="py-1 px-2 bg-charcoal/60 text-white/80 rounded-lg"
+                            >
+                                <FontAwesomeIcon icon={faTrashCan} />
                             </button>
                         </div>
-                        {labelError && <span className="text-red-500 text-sm">{labelError}</span>}
                     </div>
-                ) : (
-                    <button
-                        disabled={!isOwner}
-                        onClick={() => {
-                            setNewLabel(artwork.label || "");
-                            setEditMode(true);
-                        }}
-                    >
-            <span className="text-3xl text-center font-bold tracking-widest text-gray-300">
-              {artwork.label || (!artwork.label && isOwner && "Label")}
-            </span>
-                    </button>
-                )}
-                <span className="text-xs text-neutral/70 text-center tracking-wider">
-          {artwork.isAIGenerated && "AI Generated"}
-        </span>
-            </div>
-            <div className="flex items-start mx-auto w-11/12 gap-4">
-                <img
-                    src={artwork.downloadURL}
-                    alt={artwork.fileName}
-                    className="w-auto h-96 mx-auto object-contain mb-4 p-0.5 rounded-md border-2 border-white/80 drop-shadow bg-gradient-to-tl from-midnight/10 to-neutral/5"
-                />
-                {editDescription ? (
-                    <div className="w-full relative">
-            <textarea
-                value={newDescription}
-                onChange={(e) => {
-                    setNewDescription(e.target.value);
-                    if (descriptionError) setDescriptionError("");
-                }}
-                className="w-full h-32 max-h-96 min-h-16 px-4 py-2 pr-10 rounded-lg bg-dark border border-white/40 transition-all text-white/80 placeholder-charcoal resize-y overflow-auto text-left align-top"
-                placeholder="Enter your description..."
-                rows={4}
-            />
-                        {descriptionError && (
-                            <span className="text-red-500 text-sm absolute top-0 left-0 m-2">
-                {descriptionError}
-              </span>
-                        )}
-                        <FontAwesomeIcon
-                            className="cursor-pointer text-white/80 absolute bottom-3 right-3"
-                            icon={faFloppyDisk}
-                            onClick={handleSaveDescription}
-                        />
-                    </div>
-                ) : artwork.description || newDescription ? (
-                    <p className="text-white/80">
-                        {artwork.description}
-                    </p>
-                ) : null}
-            </div>
-            <div className="space-y-2 text-white w-11/12 mx-auto">
-                <div className="flex items-center justify-between">
-                    <div className="flex justify-center items-center gap-4 text-2xl text-neutral brightness-200">
-                        <button onClick={toggleLike} disabled={isOwner || !user}>
-                            <FontAwesomeIcon icon={faThumbsUp} />
-                        </button>
-                        <span>{artwork.likes?.length ?? 0}</span>
-                    </div>
-                    {isOwner && !editDescription && (
-                        <button
-                            disabled={!isOwner}
-                            onClick={() => {
-                                setNewDescription(artwork.description || "");
-                                setEditDescription(true);
-                            }}
-                        >
-                            <FontAwesomeIcon icon={faPen} />
-                        </button>
-                    )}
-                    <div>
-                        <button
-                            onClick={() => {
-                                try {
-                                    deleteArtwork(artwork.id);
-                                } catch (err) {
-                                    setLocalError("Failed to delete artwork. Please try again.");
-                                    console.error("Error deleting artwork: ", err);
-                                }
-                            }}
-                            hidden={!isOwner}
-                            disabled={!isOwner}
-                        >
-                            <FontAwesomeIcon icon={faTrashCan} className="text-red-800 text-xl" />
-                        </button>
+                    <div className="flex items-center justify-between mt-4 p-4 bg-charcoal rounded-lg">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={toggleLike}
+                                disabled={isOwner}
+                                className={`hover:text-red-400 hover:bg-dark p-2 rounded-lg
+                                ${hasLiked ? 'text-red-400' : 'text-white/60'}`}
+                            >
+                                <FontAwesomeIcon
+                                    icon={hasLiked ? faSolidHeart : faHeart}
+                                    className="mr-2"
+                                />
+                                <span className="text-sm">{artwork.likes?.length ?? 0} likes</span>
+                            </button>
+                            <div className="flex items-center text-white/60">
+                                <FontAwesomeIcon icon={faComment} className="mr-2" />
+                                <span className="text-sm">{comments.length ?? 0} comments</span>
+                            </div>
+                        </div>
+                        <div className="text-sm text-white/60">
+                            {formatTimeAgo(artwork.createdAt!.toDate())}
+                        </div>
                     </div>
                 </div>
-                {artwork.ownerName && <p className="text-gray-300">By: {artwork.ownerName}</p>}
-                {/* Comments Section */}
-                <div className="mt-6">
-                    <h2 className="text-xl font-semibold mb-2">Comments</h2>
-                    {localError && <p className="text-red-500 text-sm mb-2">{localError}</p>}
-                    <div className="space-y-4">
-                        {comments.map((comment) => (
-                            <div key={comment.id} className="border border-gray-500 p-2 rounded-md">
-                                <div className="flex justify-between items-center">
-                                    <p className="text-xs text-gray-400">
-                                        {comment.ownerName}
-                                        {comment.uid === artwork.uid && <span> • Author</span>}
-                                    </p>
+                {/* Details Section */}
+                <div className="space-y-6">
+                    {/* Owner Info */}
+                    <div className="bg-charcoal rounded-lg p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <FontAwesomeIcon icon={faCircleUser} size='2xl' className="text-white" />
+                                <div>
+                                    <h3 className="font-semibold text-white">{artwork.ownerName}</h3>
+                                    <p className="text-sm text-gray-400">Artist</p>
+                                </div>
+                            </div>
+                            {isOwner && !editMode && (
+                                <button
+                                    className="text-white/80 hover:text-neutral"
+                                    onClick={() => {
+                                        setNewLabel(artwork.label || "");
+                                        setNewDescription(artwork.description || "");
+                                        setEditMode(true);
+                                    }}
+                                >
+                                    <FontAwesomeIcon icon={faPenToSquare} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Label and Description */}
+                        {editMode ? (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">Label</label>
+                                    <input
+                                        value={newLabel}
+                                        onChange={(e) => setNewLabel(e.target.value)}
+                                        className="bg-dark border border-neutral text-white
+                                        p-2 rounded-lg w-full
+                                        focus:outline-white/80"
+                                        placeholder="Artwork label..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                                    <textarea
+                                        value={newDescription}
+                                        onChange={(e) => setNewDescription(e.target.value)}
+                                        className="bg-dark border border-neutral text-white
+                                        resize-none p-2 rounded-lg w-full
+                                        focus:outline-white/80"
+                                        placeholder="Add a description..."
+                                        rows={6}
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={handleSaveEdit}
+                                            className="bg-[#894389] text-dark hover:bg-[#894389]/80
+                                            py-2 px-4 rounded-lg flex items-center gap-2 text-sm">
+                                        <FontAwesomeIcon
+                                            icon={faFloppyDisk}
+                                        />
+                                        Save Changes
+                                    </button>
                                     <button
-                                        onClick={() => {
-                                            try {
-                                                deleteComment(artwork.id, comment.id);
-                                            } catch (err) {
-                                                setLocalError("Failed to delete comment. Please try again.");
-                                                console.error("Error deleting comment:", err);
-                                            }
-                                        }}
-                                        hidden={!(user?.uid === comment.uid)}
-                                        className="text-sm text-neutral/80 px-1"
+                                        onClick={handleCancelEdit}
+                                        className="bg-dark border border-neutral text-white hover:bg-neutral/20
+                                        py-2 px-4 rounded-lg flex items-center gap-2 text-sm"
                                     >
-                                        X
+                                        <FontAwesomeIcon
+                                            icon={faX}
+                                        />
+                                        Cancel
                                     </button>
                                 </div>
-                                <p className="text-lg">{comment.text}</p>
                             </div>
-                        ))}
+                        ) : (
+                            <div>
+                                <h1 className="text-2xl font-bold text-white mb-3">{artwork.label}</h1>
+                                {artwork.description && (
+                                    <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">{artwork.description}</p>
+                                )}
+                            </div>
+                        )}
                     </div>
-                    <div className="mt-4 flex gap-2">
-                        <input
-                            type="text"
-                            placeholder="Write a comment..."
-                            value={commentText}
-                            onChange={(e) => {
-                                setCommentText(e.target.value);
-                                if (localError) setLocalError("");
-                            }}
-                            className="flex-1 p-2 bg-charcoal text-white rounded-md border border-gray-600 focus:border-white"
-                        />
-                        <button
-                            onClick={handleAddComment}
-                            disabled={!user}
-                            className="disabled:cursor-not-allowed bg-gradient-to-br from-charcoal/40 to-neutral/20 border px-8 py-2 rounded-md"
-                        >
-                            Post
-                        </button>
+                    {/* Comment Section */}
+                    <div className="bg-charcoal rounded-lg p-6">
+                        <h2 className="text-lg font-semibold text-white mb-4">
+                            Comments ({comments.length ?? 0})
+                        </h2>
+
+                        {/* Add Comment */}
+                        {user && (
+                            <form onSubmit={handleAddComment} className="mb-6">
+                                <div className="flex gap-3">
+                                    <FontAwesomeIcon icon={faCircleUser} size='2xl' className="text-white" />
+                                    <div className="flex-1 space-y-2">
+                                        <textarea
+                                            placeholder="Write a comment..."
+                                            value={commentText}
+                                            onChange={(e) => setCommentText(e.target.value)}
+                                            className="resize-none w-full flex-1 p-2 bg-dark text-white text-sm
+                                            rounded-md border border-gray-600 focus:outline-white/80"
+                                            rows={3}
+                                        />
+                                        <div className="flex justify-end">
+                                            <button
+                                                disabled={!user || commentText.length === 0}
+                                                className={`bg-dark border border-neutral text-white
+                                                    py-2 px-8 rounded-lg flex items-center gap-2 text-sm
+                                                    ${commentText.length === 0 ? '' : 'hover:bg-neutral/20'}
+                                                    `}
+                                            >
+                                                Post
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        )}
+
+                        {/* Comments List */}
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                            {comments.map((comment) => (
+                                <div key={comment.id} className="flex gap-3">
+                                    <FontAwesomeIcon icon={faCircleUser} size='2xl' className="text-white" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between">
+                                            <span
+                                                className={`font-medium
+                                                ${comment.uid === user?.uid ? 'text-plum brightness-200' : 'text-white'}   
+                                            `}>
+                                                {comment.ownerName}
+                                            </span>
+                                            <span className="text-xs text-gray-400">
+                                                {formatTimeAgo(comment.createdAt!.toDate())}
+                                            </span>
+                                        </div>
+                                        <p className="text-gray-300 break-words">{comment.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
