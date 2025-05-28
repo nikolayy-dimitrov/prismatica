@@ -21,8 +21,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = (props: AuthProviderPro
 
     useEffect(() => {
         const auth = getAuth();
-        return onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
+        return onAuthStateChanged(auth, async (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+            } else {
+                setUser(null);
+            }
             setIsLoading(false);
         });
     }, []);
