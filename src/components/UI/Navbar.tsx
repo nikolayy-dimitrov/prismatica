@@ -60,8 +60,12 @@ export const Navbar = () => {
                         {isMenuToggled && (
                             <div className="absolute top-12 right-10 bg-plum/80 border border-plum rounded-lg py-4 pl-12 pr-6 z-40">
                                 <div className="flex flex-col items-end gap-4 text-white/90">
-                                    <Link to="/profile">View Profile</Link>
-                                    <Link to="/gallery">Gallery</Link>
+                                    <Link
+                                        onClick={toggleMenu}
+                                        to="/profile">View Profile</Link>
+                                    <Link
+                                        onClick={toggleMenu}
+                                        to="/gallery">Gallery</Link>
                                     <button
                                         onClick={handleLogout}
                                         className="w-full border-t border-neutral/20 pt-2 text-right"

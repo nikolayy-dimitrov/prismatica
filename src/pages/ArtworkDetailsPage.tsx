@@ -255,7 +255,7 @@ export const ArtworkDetails = () => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={handleSaveEdit}
-                                            className="bg-[#894389] text-dark hover:bg-[#894389]/80
+                                            className="bg-plum-100 text-dark hover:bg-plum-100/80
                                             py-2 px-4 rounded-lg flex items-center gap-2 text-sm">
                                         <FontAwesomeIcon
                                             icon={faFloppyDisk}

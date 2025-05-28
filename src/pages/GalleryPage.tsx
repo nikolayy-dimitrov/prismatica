@@ -5,11 +5,11 @@ import { motion } from "framer-motion";
 import { faCircleUser, faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faHeart, faComment, faCircleDown } from "@fortawesome/free-regular-svg-icons";
 
-import { useAllArtworks } from "../hooks/useGallery.ts";
+import { useGallery } from "../hooks/useGallery.ts";
 import { AuthContext } from "../context/AuthContext.tsx";
 
 export const Gallery = () => {
-    const { artworks , loading } = useAllArtworks();
+    const { artworks , loading } = useGallery();
     const { user } = useContext(AuthContext);
 
     const handleDownload = (url: string, filename: string) => {

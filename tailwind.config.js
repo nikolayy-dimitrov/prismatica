@@ -10,6 +10,7 @@ module.exports = {
         "charcoal": "#2E2E2E",
         "neutral": "#4E5D6C",
         "plum": "#3D1E3D",
+        "plum-100": "#894389",
         "midnight": "#1B263B",
       },
     },
