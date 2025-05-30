@@ -1,24 +1,30 @@
 import { Link } from "react-router-dom";
 import { useContext, useState } from "react";
 import { signOut } from "firebase/auth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { motion } from "framer-motion";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 
-import { auth } from "../../config/firebaseConfig.ts";
-import { AuthContext } from "../../context/AuthContext.tsx";
 import Logo from "../../assets/prismatica-logo.png";
 import useMediaQuery from "../../hooks/useMediaQuery.ts";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { auth } from "../../config/firebaseConfig.ts";
+import { AuthContext } from "../../context/AuthContext.tsx";
+import { Auth } from "./auth/Auth.tsx";
 
 export const Navbar = () => {
     const { user } = useContext(AuthContext);
 
     const isAboveMediumScreens = useMediaQuery("(min-width: 1060px)");
 
-    const [isMenuToggled, setIsMenuToggled] = useState<boolean>(false)
+    const [isMenuToggled, setIsMenuToggled] = useState<boolean>(false);
+    const [isLoginToggled, setIsLoginToggled] = useState<boolean>(false);
 
     const toggleMenu = () => {
         setIsMenuToggled(!isMenuToggled);
+    };
+
+    const toggleLogin = () => {
+        setIsLoginToggled(!isLoginToggled);
     };
 
     const handleLogout = async (e: React.MouseEvent) => {
@@ -32,15 +38,16 @@ export const Navbar = () => {
         }
     };
 
-    return <nav className="md:w-full mx-auto relative flex items-center justify-between py-4 px-8 font-Inter">
+    return (<nav className="md:w-full mx-auto relative flex items-center justify-between py-4 px-8 font-Inter">
         <Link to="/" className="z-40 transition duration-300 active:scale-95 flex items-center gap-2 max-md:mt-1">
             <img src={Logo} alt="Logo" className="w-6 h-6" />
             {isAboveMediumScreens &&
-                <span className="transition duration-200 text-midnight text-xl font-extrabold brightness-200 tracking-wider">
+                <span className="transition duration-200 text-plum-100 text-xl font-extrabold brightness-200 tracking-wider">
                     PRISMATICA
                 </span>
             }
         </Link>
+
         {/* Main menu */}
         {isAboveMediumScreens ? (
             <div className="flex items-center gap-2">
@@ -77,39 +84,32 @@ export const Navbar = () => {
                         )}
                     </>
                 ) : (
-                    <Link
-                        to="/sign-up"
+                    <button
+                        onClick={toggleLogin}
                         className="text-plum brightness-200 px-4">
                         <FontAwesomeIcon icon={faUser} />
-                    </Link>
+                    </button>
                 )}
             </div>
         ) : (
             // Hamburger Menu
             <button className="flex items-center z-40" onClick={toggleMenu}>
                 <div
-                    className={`relative w-[30px] h-[20px] z-40 transform transition-transform duration-500 ease-in-out ${
-                        isMenuToggled ? "rotate-0" : ""
-                    }`}
+                    className={`relative w-7 h-5 z-40 transform transition-transform duration-500 ease-in-out`}
                 >
                     <span
-                        className={`block absolute h-[3px] w-full bg-gradient-to-r from-midnight to-plum rounded-[9px] left-0 transition-all duration-250 ease-in-out ${
-                            isMenuToggled ? "top-[10px] rotate-[135deg]" : "top-0"
-                        }`}
+                        className={`block absolute h-[2px] w-full bg-white/60 rounded-[9px] top-0 right-0 transition-all duration-250 ease-in-out`}
                     ></span>
                     <span
-                        className={`block absolute h-[3px] w-full top-[10px] bg-gradient-to-r from-midnight to-plum rounded-[9px] left-0 transition-all duration-250 ease-in-out ${
-                            isMenuToggled ? "opacity-0 left-[-60px]" : ""
-                        }`}
+                        className={`block absolute h-[2px] w-3/4 top-[10px] bg-white/60 rounded-[9px] right-0 transition-all duration-250 ease-in-out`}
                     ></span>
                     <span
-                        className={`block absolute h-[3px] w-full bg-gradient-to-r from-midnight to-plum rounded-[9px] left-0 transition-all duration-250 ease-in-out ${
-                            isMenuToggled ? "top-[10px] rotate-[-135deg]" : "top-[20px]"
-                        }`}
+                        className={`block absolute h-[2px] w-1/2 bg-white/60 rounded-[9px] top-[20px] right-0 transition-all duration-250 ease-in-out`}
                     ></span>
                 </div>
             </button>
         )}
+
         {/* Mobile Menu Modal */}
         {!isAboveMediumScreens && isMenuToggled && (
             <motion.div
@@ -118,7 +118,7 @@ export const Navbar = () => {
                 exit={{ y: -100, opacity: 0 }}
                 transition={{ duration: 0.5 }}
                 className="fixed top-20 z-30 w-10/12 h-[60vh] flex flex-col items-center justify-center
-                        bg-gradient-to-b from-midnight/80 to-plum/80 backdrop-blur rounded-3xl"
+                        bg-dark/60 border border-plum backdrop-blur rounded-xl"
             >
                 <div className="flex flex-col items-center justify-center gap-16
                         text-white/80 text-3xl font-normal">
@@ -133,11 +133,12 @@ export const Navbar = () => {
                         </button>
                     </Link>
                     {!user ? (
-                        <Link to="/sign-in">
-                            <button onClick={toggleMenu}>
-                                Sign In
-                            </button>
-                        </Link>
+                        <button onClick={()=> {
+                            toggleLogin();
+                            toggleMenu();
+                        }}>
+                            <span>Sign In</span>
+                        </button>
                     ) : (
                         <div className="flex flex-col items-center justify-center gap-20">
                             <Link
@@ -157,5 +158,13 @@ export const Navbar = () => {
                 </div>
             </motion.div>
         )}
+
+        {/* Authentication component */}
+        {isLoginToggled && !user && (
+            <Auth
+                onClose={() => toggleLogin()}
+            />
+        )}
     </nav>
+    )
 }

@@ -70,7 +70,7 @@ export const Home = () => {
                     <motion.div variants={fadeInUp} className="flex justify-center gap-6 mt-6">
                         {!user ?
                             <Link
-                                to="/sign-up"
+                                to="/auth/signup"
                                 className="px-6 py-3 rounded-lg bg-purple-700 hover:bg-plum transition duration-300"
                             >
                                 Join Now

@@ -1,4 +1,4 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 export const handleGoogleLogin = async () => {
     const setError = String;
@@ -8,18 +8,6 @@ export const handleGoogleLogin = async () => {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
         window.location.href = '/';
-    } catch (err) {
-        setError((err as Error).message);
-    }
-};
-
-export const handleAnonymousLogin = async () => {
-    const setError = String;
-    setError('');
-    try {
-        const auth = getAuth();
-        await signInAnonymously(auth);
-        window.location.href = '/profile';
     } catch (err) {
         setError((err as Error).message);
     }

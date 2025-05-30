@@ -79,13 +79,14 @@ export const Profile = () => {
                             <h1 className="text-2xl font-bold text-white">{user.displayName}</h1>
                             <p className="text-gray-400 text-sm">{user.email}</p>
                         </div>
+                        {/* TODO: Implement a working edit profile */}
                         <button className="bg-plum-100 text-dark hover:bg-plum-100/80 mt-4 sm:mt-0 py-2 px-4 rounded-lg">
                             Edit Profile
                         </button>
                     </div>
 
                     <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                        <span>📅 Joined {user.metadata.creationTime}</span>
+                        <span>📅 Joined {user.metadata.creationTime!.split(" ").slice(0,4).join(" ")}</span>
                     </div>
                 </div>
             </div>

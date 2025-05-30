@@ -11,17 +11,10 @@ import { ArtworkDetails } from "./pages/ArtworkDetailsPage.tsx";
 import { Artboard } from "./pages/ArtboardPage.tsx";
 import { CreateArt } from "./pages/CreateArtPage.tsx";
 import { AIArt } from "./components/AIArt.tsx";
-
-import AuthGuard from "./guards/AuthGuard.tsx";
-import { SignUp } from "./pages/auth/SignUpPage.tsx";
-import { EmailSignUp } from "./pages/auth/EmailSignUpPage.tsx";
-import { SignIn } from "./pages/auth/SignInPage.tsx";
-import { EmailSignIn } from "./pages/auth/EmailSignInPage.tsx";
-
+import { Profile } from "./pages/ProfilePage.tsx";
 import { NotFoundPage } from "./pages/404.tsx";
 
 import GuestGuard from "./guards/GuestGuard.tsx";
-import { Profile } from "./pages/ProfilePage.tsx";
 
 function App() {
   return (
@@ -37,15 +30,9 @@ function App() {
                 </Route>
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/gallery/:id" element={<ArtworkDetails />} />
-                <Route element={<AuthGuard />}>
-                    <Route path="/sign-up" element={<SignUp />} />
-                    <Route path="/sign-up/email" element={<EmailSignUp />} />
-                    <Route path="/sign-in" element={<SignIn />} />
-                    <Route path="/sign-in/email" element={<EmailSignIn />} />
-                </Route>
                 <Route path="*" element={<NotFoundPage />} />
             </Routes>
-              <ToastContainer />
+            <ToastContainer />
           </AuthProvider>
       </div>
   )

@@ -64,7 +64,7 @@ export const Artboard = () => {
                         <div className="w-full border-t border-plum/60"></div>
                     </div>
                     <div className="relative flex justify-center">
-                        <span className="bg-black px-4 text-xs text-white/60">or</span>
+                        <span className="bg-dark px-4 text-xs text-white/60">or</span>
                     </div>
                 </div>
                 <div className="flex max-md:flex-col items-center justify-center gap-4">
